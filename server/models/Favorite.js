@@ -1,0 +1,23 @@
+const mongoose = require("mongoose");
+
+const favoriteSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    article: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Article",
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+favoriteSchema.index({ user: 1, article: 1 }, { unique: true });
+
+module.exports = mongoose.models.Favorite || mongoose.model("Favorite", favoriteSchema);
