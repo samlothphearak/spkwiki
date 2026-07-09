@@ -69,6 +69,15 @@ export function Navbar() {
               <span className="hidden sm:inline tracking-tight max-w-[100px] truncate">
                 {user.name}
               </span>
+              {user.tier && user.tier !== "free" && (
+                <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider ${
+                  user.tier === "pro"
+                    ? "border-sky-500/30 bg-sky-500/10 text-sky-400"
+                    : "border-violet-500/30 bg-violet-500/10 text-violet-400"
+                }`}>
+                  {user.tier}
+                </span>
+              )}
             </Link>
           ) : (
             <Link

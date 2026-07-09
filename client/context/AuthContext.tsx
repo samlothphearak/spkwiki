@@ -6,6 +6,12 @@ type User = {
   id: string;
   name: string;
   email: string;
+  role?: string;
+  tier?: "free" | "pro" | "enterprise";
+  avatar?: string | null;
+  bio?: string;
+  isVerified?: boolean;
+  createdAt?: string;
 };
 
 type AuthContextType = {
@@ -13,6 +19,7 @@ type AuthContextType = {
   token: string | null;
   login: (user: User, token: string) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
   isAuthenticated: boolean;
 };
 
@@ -46,12 +53,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("spk-token");
   };
 
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    localStorage.setItem("spk-user", JSON.stringify(updatedUser));
+  };
+
   const value = useMemo(
     () => ({
       user,
       token,
       login,
       logout,
+      updateUser,
       isAuthenticated: Boolean(user && token),
     }),
     [user, token]

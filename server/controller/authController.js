@@ -17,11 +17,12 @@ const buildUserPayload = (user) => ({
   name: user.name,
   email: user.email,
   role: user.role || "User",
+  tier: user.tier || "free",
   bio: user.bio || "",
   avatar: user.avatar || null,
   isVerified: Boolean(user.isVerified),
   isActive: user.isActive === undefined ? true : Boolean(user.isActive),
-  createdAt: user.createdAt || user.createdAt,
+  createdAt: user.createdAt,
 });
 
 const findUserByEmail = async (email) => {
@@ -52,6 +53,7 @@ const createUserRecord = async ({ name, email, password }) => {
     name,
     email,
     password,
+    tier: "free",
   };
   memoryUsers.push(newUser);
   return newUser;
@@ -125,5 +127,83 @@ exports.me = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Unable to fetch user.", error: error.message });
+  }
+};
+
+exports.upgrade = async (req, res) => {
+  try {
+    const { tier } = req.body;
+
+    if (!tier || !["free", "pro", "enterprise"].includes(tier)) {
+      return res.status(400).json({ success: false, message: "Invalid tier specified." });
+    }
+
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized." });
+    }
+
+    if (isMongoReady()) {
+      const user = await User.findById(req.user._id || req.user.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found." });
+      }
+      user.tier = tier;
+      await user.save();
+      req.user = user;
+    } else {
+      const user = memoryUsers.find((u) => u.id === req.user.id || u._id?.toString() === req.user.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found in memory." });
+      }
+      user.tier = tier;
+      req.user = user;
+    }
+
+    res.json({
+      success: true,
+      message: `Account upgraded to ${tier} successfully.`,
+      user: buildUserPayload(req.user),
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Upgrade operation failed.", error: error.message });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { bio, avatar } = req.body;
+
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized." });
+    }
+
+    if (isMongoReady()) {
+      const user = await User.findById(req.user._id || req.user.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found." });
+      }
+
+      if (bio !== undefined) user.bio = bio;
+      if (avatar !== undefined) user.avatar = avatar;
+
+      await user.save();
+      req.user = user;
+    } else {
+      const user = memoryUsers.find((u) => u.id === req.user.id || u._id?.toString() === req.user.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found in memory." });
+      }
+      if (bio !== undefined) user.bio = bio;
+      if (avatar !== undefined) user.avatar = avatar;
+      req.user = user;
+    }
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully.",
+      user: buildUserPayload(req.user),
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Update operation failed.", error: error.message });
   }
 };

@@ -50,6 +50,12 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
+    tier: {
+      type: String,
+      enum: ["free", "pro", "enterprise"],
+      default: "free",
+    },
+
     isVerified: {
       type: Boolean,
       default: false,

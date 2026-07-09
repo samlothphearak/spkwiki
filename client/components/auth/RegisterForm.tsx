@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/hook/useAuth";
 import { registerUser } from "@/services/auth";
+import { ShieldAlert, Loader2 } from "lucide-react";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export function RegisterForm() {
       login(response.user, response.token);
       router.push("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      setError(err instanceof Error ? err.message : "Profile registration failed");
     } finally {
       setIsLoading(false);
     }
@@ -33,64 +34,89 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label htmlFor="name" className="mb-2 block text-sm font-medium text-slate-700">
-          Full name
+      
+      {/* Name Input Field */}
+      <div className="space-y-2">
+        <label htmlFor="name" className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 select-none">
+          Identity / Handle
         </label>
         <input
           id="name"
           type="text"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Alex Morgan"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+          placeholder="e.g., Phearak Phuwasit"
+          className="w-full rounded-xl border border-slate-900 bg-slate-950/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-800 outline-none transition-all focus:border-sky-500/50 focus:bg-slate-950/80 focus:ring-1 focus:ring-sky-500/20 font-mono"
           required
+          disabled={isLoading}
         />
       </div>
 
-      <div>
-        <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">
-          Email address
+      {/* Email Input Field */}
+      <div className="space-y-2">
+        <label htmlFor="email" className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 select-none">
+          Network Mail Address
         </label>
         <input
           id="email"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="you@example.com"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+          placeholder="name@domain.com"
+          className="w-full rounded-xl border border-slate-900 bg-slate-950/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-800 outline-none transition-all focus:border-sky-500/50 focus:bg-slate-950/80 focus:ring-1 focus:ring-sky-500/20 font-mono"
           required
+          disabled={isLoading}
         />
       </div>
 
-      <div>
-        <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-700">
-          Password
+      {/* Password Input Field */}
+      <div className="space-y-2">
+        <label htmlFor="password" className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 select-none">
+          Generate Security Passkey
         </label>
         <input
           id="password"
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          placeholder="Create a strong password"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
+          placeholder="••••••••"
+          className="w-full rounded-xl border border-slate-900 bg-slate-950/40 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-800 outline-none transition-all focus:border-sky-500/50 focus:bg-slate-950/80 focus:ring-1 focus:ring-sky-500/20 font-mono"
           required
+          disabled={isLoading}
         />
       </div>
 
-      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+      {/* Secure Registration Exception Display */}
+      {error && (
+        <div className="flex items-start gap-2 rounded-xl border border-rose-500/10 bg-rose-500/[0.04] p-3.5 text-xs font-mono text-rose-400">
+          <ShieldAlert size={14} className="mt-0.5 shrink-0" />
+          <div className="space-y-0.5">
+            <span className="font-bold uppercase tracking-wider block text-[10px]">REG_EXCEPTION //</span>
+            <p className="text-rose-400/80 leading-normal">{error}</p>
+          </div>
+        </div>
+      )}
 
+      {/* Submission Dispatcher Action */}
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full rounded-2xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70"
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-3 text-sm font-semibold text-black transition-all duration-200 hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-50 font-sans"
       >
-        {isLoading ? "Creating account..." : "Create account"}
+        {isLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin stroke-[2.5]" />
+            <span>Deploying Profile Identity...</span>
+          </>
+        ) : (
+          <span>Initialize & Launch Profile</span>
+        )}
       </button>
 
-      <p className="text-center text-sm text-slate-600">
-        Already have an account?{' '}
-        <Link href="/login" className="font-semibold text-sky-700 hover:text-sky-800">
+      {/* Navigation Redirect Anchor */}
+      <p className="text-center text-xs font-mono text-slate-600 pt-2">
+        Already verified?{" "}
+        <Link href="/login" className="text-sky-400 hover:text-sky-300 font-bold ml-1 transition-colors">
           Sign in
         </Link>
       </p>
